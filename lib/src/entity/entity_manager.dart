@@ -109,7 +109,7 @@ class EntityManager {
   }
 
   /// Remove and dispose a component.
-  void removeComponentFromEntityForced(Entity entity, Type componentType) {
+  void _removeComponentFromEntity(Entity entity, Type componentType) {
     if (!entity._componentTypes.contains(componentType)) {
       return;
     }
@@ -125,13 +125,13 @@ class EntityManager {
     // Make a copy so we can update this set while looping over it.
     final componentsToRemove = entity._componentsToRemove.toSet();
     for (final componentType in componentsToRemove) {
-      removeComponentFromEntityForced(entity, componentType);
+      _removeComponentFromEntity(entity, componentType);
     }
 
     // Make a copy so we can update this set while looping over it.
     final componentTypes = entity._componentTypes.toSet();
     for (final componentType in componentTypes) {
-      removeComponentFromEntityForced(entity, componentType);
+      _removeComponentFromEntity(entity, componentType);
     }
   }
 
@@ -165,8 +165,8 @@ class EntityManager {
   void _releaseComponentsFromEntity(Entity entity) {
     // Make a copy so we can update this set while looping over it.
     final components = entity._componentsToRemove.toList();
-    components.forEach(
-        (component) => removeComponentFromEntityForced(entity, component));
+    components
+        .forEach((component) => _removeComponentFromEntity(entity, component));
   }
 
   /// Fully release and reset an entity.
