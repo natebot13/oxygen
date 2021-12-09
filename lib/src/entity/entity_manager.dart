@@ -109,15 +109,14 @@ class EntityManager {
   }
 
   /// Remove and dispose a component.
-  void _removeComponentFromEntity(Entity entity, Type componentType) {
+  void removeComponentFromEntityForced(Entity entity, Type componentType) {
     if (!entity._componentTypes.contains(componentType)) {
       return;
     }
-
+    entity._componentsToRemove.remove(componentType);
     entity._componentTypes.remove(componentType);
     final component = entity._components.remove(componentType);
     component?.dispose();
-
     _queryManager._onComponentRemovedFromEntity(entity, componentType);
   }
 
@@ -126,13 +125,13 @@ class EntityManager {
     // Make a copy so we can update this set while looping over it.
     final componentsToRemove = entity._componentsToRemove.toSet();
     for (final componentType in componentsToRemove) {
-      _removeComponentFromEntity(entity, componentType);
+      removeComponentFromEntityForced(entity, componentType);
     }
 
     // Make a copy so we can update this set while looping over it.
     final componentTypes = entity._componentTypes.toSet();
     for (final componentType in componentTypes) {
-      _removeComponentFromEntity(entity, componentType);
+      removeComponentFromEntityForced(entity, componentType);
     }
   }
 
@@ -155,6 +154,21 @@ class EntityManager {
     _entitiesToRemove.clear();
   }
 
+  void processRemovedComponents() {
+    // Make a copy so we can update this set while looping over it.
+    final entities = _entitiesWithRemovedComponents.toList();
+    entities.forEach(_releaseComponentsFromEntity);
+    _entitiesWithRemovedComponents.clear();
+  }
+
+  /// Fully release and reset an component.
+  void _releaseComponentsFromEntity(Entity entity) {
+    // Make a copy so we can update this set while looping over it.
+    final components = entity._componentsToRemove.toList();
+    components.forEach(
+        (component) => removeComponentFromEntityForced(entity, component));
+  }
+
   /// Fully release and reset an entity.
   void _releaseEntity(Entity entity) {
     _removeAllComponentFromEntity(entity);
@@ -164,6 +178,8 @@ class EntityManager {
     if (_entitiesByName.containsKey(entity.name)) {
       _entitiesByName.remove(entity.name);
     }
-    entity._pool?.release(entity);
+    entity.dispose();
+    //TODO: Why?
+    //entity._pool?.release(entity);
   }
 }
