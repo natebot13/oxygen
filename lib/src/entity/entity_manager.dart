@@ -156,8 +156,7 @@ class EntityManager {
 
   void processRemovedComponents() {
     // Make a copy so we can update this set while looping over it.
-    final entities = _entitiesWithRemovedComponents.toList();
-    entities.forEach(_releaseComponentsFromEntity);
+    _entitiesWithRemovedComponents.forEach(_releaseComponentsFromEntity);
     _entitiesWithRemovedComponents.clear();
   }
 
